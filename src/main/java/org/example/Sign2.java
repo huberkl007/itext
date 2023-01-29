@@ -14,13 +14,48 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 public class Sign2 {
+
+    public static final String CERT = "src/main/resources/t2g.p7b";
+
     static Certificate[] chain;
     static byte[] toSign;
     static byte[] hash;
+
+    public static void main(String[] args) throws Exception {
+
+        java.security.Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+        chain = loadChain();
+
+        String src = "src/main/resources/hello.pdf";
+        String between = "between29.pdf";
+        String dest = "test29.pdf";
+        String fieldName = "sign";
+
+        emptySignature(src, between, fieldName);
+        System.out.println("toSign.length="+toSign.length);
+        System.out.println("toSign-Hex="+Hex.encodeHexString(toSign));
+        System.out.println("toSign-Base64="+java.util.Base64.getEncoder().encodeToString(toSign));
+
+        String signature = "";  // signed hash signature we get from client
+        //byte[] signatureBytes = Hex.decodeHex(signature.toCharArray());
+
+        T2G t2g = new T2G();
+        System.out.println("auth=" + t2g.setAuth(T2G.USERNAME, T2G.PIN));
+        t2g.setCertSN(T2G.CERT_SN);
+        String requestID = t2g.generateRequestID();
+        System.out.println("requestID=" + requestID);
+        System.out.println("Signed hashes received=" + t2g.sign(toSign, requestID));
+
+        String status = t2g.getStatus();
+        System.out.println("status=" + status);
+
+        createSignature(between, dest, fieldName, hash, t2g.getSignedHashBytes());
+    }
 
     static class MyExternalSignatureContainer implements ExternalSignatureContainer {
         protected byte[] sig;
@@ -44,13 +79,14 @@ public class Sign2 {
                 ExternalDigest digest = getDigest();
                 String hashAlgorithm = getHashAlgorithm();
 
-                Certificate[] certs = {null};
+                //Certificate[] certs = {null};
 
                 hash = DigestAlgorithms.digest(is, digest.getMessageDigest(hashAlgorithm));
-                PdfPKCS7 sgn = getPkcs(certs);
+                //PdfPKCS7 sgn = getPkcs(certs);
+                PdfPKCS7 sgn = getPkcs(chain);
 
                 toSign = sgn.getAuthenticatedAttributeBytes(hash, getOscp(), null,
-                        MakeSignature.CryptoStandard.CMS);
+                        MakeSignature.CryptoStandard.CADES);
 
                 return new byte[0];
             } catch (IOException | GeneralSecurityException e) {
@@ -60,8 +96,9 @@ public class Sign2 {
 
         @Override
         public void modifySigningDictionary(PdfDictionary pdfDictionary) {
-            pdfDictionary.put(PdfName.FILTER, PdfName.ADOBE_PPKMS);
-            pdfDictionary.put(PdfName.SUBFILTER, PdfName.ADBE_PKCS7_DETACHED);
+            pdfDictionary.put(PdfName.FILTER, new PdfName("Adobe.PPKLite"));//PdfName.ADBE.PPKLite);//ADBE_X509_RSA_SHA1);
+            pdfDictionary.put(PdfName.SUBFILTER, new PdfName("ETSI.CAdES.detached"));//PdfName.ADBE_PKCS7_DETACHED);
+           //     /SubFilter/ETSI.CAdES.detached/Filter/Adobe.PPKLite
         }
     }
 
@@ -99,12 +136,12 @@ public class Sign2 {
 
         PdfSignatureAppearance appearance = stamper.getSignatureAppearance();
         appearance.setVisibleSignature(new Rectangle(36, 748, 144, 780), 1, fieldname);
-        appearance.setReason("Nice");
-        appearance.setLocation("Delhi");
+        appearance.setReason("Test");
+        appearance.setLocation("Detmold");
         appearance.setSignDate(cal);
 
         ExternalSignatureContainer external = new EmptyContainer();
-        MakeSignature.signExternalContainer(appearance, external, 8192);
+        MakeSignature.signExternalContainer(appearance, external, 16384);
 
         os.close();
         reader.close();
@@ -129,7 +166,8 @@ public class Sign2 {
     }
 
     public static TSAClient getTsa() {
-        return new TSAClientBouncyCastle("http://timestamp.digicert.com", null, null, 4096, "SHA-512");
+        //return new TSAClientBouncyCastle("http://timestamp.digicert.com", null, null, 4096, "SHA-512");
+        return null;
     }
 
     public static void createSignature(String src, String dest, String fieldname, byte[] hash, byte[] signature) throws IOException, DocumentException, GeneralSecurityException {
@@ -137,7 +175,7 @@ public class Sign2 {
         sgn.setExternalDigest(signature, null, "RSA");
 
         byte[] encodedSig = sgn.getEncodedPKCS7(hash, getTsa(), getOscp(), null,
-                MakeSignature.CryptoStandard.CMS);
+                MakeSignature.CryptoStandard.CADES);
 
         PdfReader reader = new PdfReader(src);
         FileOutputStream os = new FileOutputStream(dest);
@@ -148,20 +186,18 @@ public class Sign2 {
         os.close();
     }
 
-    public static void main(String[] args) throws Exception {
-        setChain();
-
-        String src = "resources/hello.pdf";
-        String between = "between.pdf";
-        String dest = "test21.pdf";
-        String fieldName = "sign";
-
-        emptySignature(src, between, fieldName);
-        System.out.println(Hex.encodeHexString(toSign));
-
-        String signature = "";  // signed hash signature we get from client
-        byte[] signatureBytes = Hex.decodeHex(signature.toCharArray());
-
-        createSignature(between, dest, fieldName, hash, signatureBytes);
+    public static Certificate[] loadChain() throws Exception {
+        CertificateFactory fact = CertificateFactory.getInstance("X.509", "BC");
+        InputStream inStream = new FileInputStream(CERT);
+        ArrayList<X509Certificate> certlist = (ArrayList) fact.generateCertificates(inStream);
+        //System.out.println("laenge: "+certlist.size());
+        //for (X509Certificate c: certlist) {System.out.println("issuer: " + c.getSubjectX500Principal());}
+ /*       Certificate[] ret = new Certificate[certlist.size()];
+        for (int n = 0; n < certlist.size(); n++) {
+            ret[n] = (Certificate) certlist.get(n);
+        }*/
+        Certificate[] ret = new Certificate[1];
+        ret[0]=(Certificate) certlist.get(0);
+        return ret;
     }
 }

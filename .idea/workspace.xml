@@ -4,15 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4a9029f0-6d20-452d-8760-aefb65358a00" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/Sign1.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/Sign2.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+    <list default="true" id="4a9029f0-6d20-452d-8760-aefb65358a00" name="Changes" comment="neuer Versuch mit getAuthenticatedAttributeBytes">
+      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Sign.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/T2G.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/T2G.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Sign2.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/Sign2.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -69,6 +64,18 @@
       <option name="presentableId" value="Default" />
       <updated>1674944150958</updated>
     </task>
+    <task id="LOCAL-00001" summary="neuer Versuch mit getAuthenticatedAttributeBytes">
+      <created>1674985322996</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1674985322996</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="neuer Versuch mit getAuthenticatedAttributeBytes" />
+    <option name="LAST_COMMIT_MESSAGE" value="neuer Versuch mit getAuthenticatedAttributeBytes" />
   </component>
 </project>
